@@ -1,14 +1,23 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig, AutoModelForSeq2SeqLM
+from transformers import AutoTokenizer, AutoModelForCausalLM, AutoConfig
 from Conversation.conversation import character_msg_constructor
 import torch
 
 # ---------- Config ----------
+translation = bool(input("Enable translation? (Y/n): ").lower() in {'y', ''})
 
 device = torch.device('cpu')  # default to cpu
 use_gpu = torch.cuda.is_available()
 print("Detecting GPU...")
 if use_gpu:
+    print("GPU detected!")
     device = torch.device('cuda')
+    print("Using GPU? (Y/N)")
+    if input().lower() == 'y':
+        print("Using GPU...")
+    else:
+        print("Using CPU...")
+        use_gpu = False
+        device = torch.device('cpu')
 
 # ---------- load Conversation model ----------
 print("Initilizing model....")
@@ -19,6 +28,20 @@ model = AutoModelForCausalLM.from_pretrained("PygmalionAI/pygmalion-1.3b", confi
 
 if use_gpu:  # load model to GPU
     model = model.to(device)
+    print("Inference at half precision? (Y/N)")
+    if input().lower() == 'y':
+        print("Loading model at half precision...")
+        model.half()
+    else:
+        print("Loading model at full precision...")
+
+if translation:
+    print("Translation enabled!")
+    print("Loading machine translation model...")
+    translator = Translate(device, language="jpn_Jpan")  # initialize translator #todo **tt fix translation
+else:
+    print("Translation disabled!")
+    print("Proceeding... wtih pure english conversation")
 
 print('--------Finished!----------')
 # --------------------------------------------------
@@ -80,6 +103,9 @@ async def get_waifuapi(command: str, data: str):
             print("cleaned_text\n" + cleaned_text)
 
             txt = cleaned_text  # initialize translated text as empty by default
+            if translation:
+                txt = translator.translate(cleaned_text)  # translate to [language] if translation is enabled
+                print("translated\n" + txt)
 
             # ----------- Waifu Expressing ----------------------- (emotion expressed)
             emotion = talk.emotion_analyze(current_converse[1])  # get emotion from waifu answer (last line)
@@ -122,6 +148,8 @@ async def get_waifuapi(command: str, data: str):
         cleaned_text = talk.clean_emotion_action_text_for_speech(current_converse[-1])  # clean text for speech
 
         translated = ''  # initialize translated text as empty by default
+        if translation:
+            translated = translator.translate(cleaned_text)  # translate to [language] if translation is enabled
 
         return JSONResponse(content=f'{current_converse[-1]}<split_token>{translated}')
 
@@ -137,7 +165,7 @@ if __name__ == "__main__":
     import socket  # check if port is available
 
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    port = 6006
+    port = 8267
     try:
         s.bind(("localhost", port))
         s.close()

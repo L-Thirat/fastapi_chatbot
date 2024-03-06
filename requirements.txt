@@ -2,3 +2,4 @@ transformers
 fastapi
 sentencepiece
 uvicorn
+pysentimiento
