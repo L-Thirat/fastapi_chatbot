@@ -9,6 +9,7 @@ use_gpu = torch.cuda.is_available()
 print("Detecting GPU...")
 if use_gpu:
     device = torch.device('cuda')
+    print("GPU detected")
 
 # ---------- load Conversation model ----------
 print("Initilizing model....")
@@ -84,7 +85,7 @@ async def get_waifuapi(command: str, data: str):
         msg = talk.construct_msg(msg, talk.history_loop_cache)  # construct message input and cache History model
         ## ----------- Will move this to server later -------- (16GB ram needed at least)
         messages = [
-            {"role": "user", "content": {msg}},
+            {"role": "user", "content": msg}
         ]
         prompt = pipe.tokenizer.apply_chat_template(messages, tokenize=False, add_generation_prompt=True, max_length=200)
         outputs = pipe(prompt, max_new_tokens=256, do_sample=True, temperature=0.7, top_k=50, top_p=0.95)[0]
