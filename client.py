@@ -6,7 +6,8 @@ import time
 def resp(msg):
     start_time = time.time()
     extra_request = parse.quote(msg)
-    url = f'https://d926f170a4161.notebooksc.jarvislabs.net/waifuapi?command=chat&data=' + extra_request
+    print(extra_request)
+    url = f'https://426e39a119e21.notebooksb.jarvislabs.net/waifuapi?command=chat&data=' + extra_request
 
     try:
         r = requests.get(url)

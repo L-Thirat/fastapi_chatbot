@@ -1,6 +1,13 @@
 from pysentimiento import create_analyzer
 import collections
 import re
+from typing import Tuple, Any
+from emoji import demojize
+
+emotion_mapping = {
+    'joy': "happy",
+    'anger': "angry"
+}
 
 
 # msg constructor and formatter
@@ -20,12 +27,12 @@ class character_msg_constructor:
             if len(self.conversation_history.split('\n')) > 40:  # limit conversation history to prevent memory leak
                 self.conversation_history = self.conversation_history.split('\n')[-6:]  # replace with last 4 lines
                 self.split_counter = 2
+            conversation_template = self.conversation_history.strip()
+        else:
+            conversation_template = f"""{self.name}'s Persona: {self.persona}
 
-        conversation_template = f"""{self.name}'s Persona: {self.persona}
-
-    {self.conversation_history.strip()}
-    You: {text}
-    """
+{self.conversation_history.strip()}
+"""
 
         return '\n'.join([x.strip() for x in conversation_template.split('\n')])
 
@@ -59,6 +66,22 @@ class character_msg_constructor:
         ordered = [k for k, v in ordered.items()]  # top two emotion
         ordered.reverse()
         return ordered[:2]
+
+    def emotion_analyze(self, text: str) -> tuple[str | Any, str]:
+        emotion_to_express = 'netural'
+
+        emotions_text = demojize(text)
+        text = re.sub(r':\w+:', '', emotions_text)
+        emotions_text = re.sub("[^A-Za-z]", " ", emotions_text).strip()
+        if emotions_text:
+            # emotions_text = re.findall(r'\((.*?)\)', emotions_text)
+            emotions = self.emotion_analyzer.predict(emotions_text).probas
+            ordered = dict(sorted(emotions.items(), key=lambda x: x[1]))
+            ordered = [k for k, v in ordered.items()]  # top two emotion
+            emotion_to_express = emotion_mapping.get(ordered[-1], emotion_to_express)
+        # text = re.sub(r'\([^)]*\)', '', emotions_text)  # remove action/emotion inside (...)
+
+        return emotion_to_express, text
 
     def clean_emotion_action_text_for_speech(self, text):
         clean_text = re.sub(r'\*.*?\*', '', text)  # remove *action* from text
