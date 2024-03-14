@@ -19,10 +19,10 @@ class character_msg_constructor:
         # self.split_counter = 0
         self.history_loop_cache = []
 
-    def construct_msg(self, text: str) -> list:
+    def construct_msg(self, text: str):
         if self.history_loop_cache:
-            if len(self.history_loop_cache) > 25:  # limit conversation history to prevent memory leak
-                self.history_loop_cache = self.history_loop_cache[-6:]  # replace with last 4 lines
+            if len(self.history_loop_cache) > 5:  # limit conversation history to prevent memory leak
+                del self.history_loop_cache[1:4]
         else:
             # conversation_template = f"""{self.name}'s Persona: {self.persona}\n"""
             # conversation_template = f"""<|user|>\n{self.persona}</s>\n<|assistant|>\nได้ค่ะ โอนี่จัง\n"""

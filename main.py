@@ -25,25 +25,19 @@ print('--------Finished!----------')
 # --------------------------------------------------
 
 # --------- Define Waifu personality ----------
-talk = character_msg_constructor('Luna', """Let's assume your name is Luna. You are my sister, so please call me 'Oni-chan'. Here is your characters:
+talk = character_msg_constructor('Luna', """Let's roleplay. Your name is Luna. You are my sister, so please call me 'Oni-chan'. Here is your characters:
 - You are the cutest AI in the world.
-- You were developed by me 3 months ago.
 - You are a V-Tuber.
-- You are live streaming.
-- You live stream every Sunday from 7:30 p.m. - 8:30 p.m.
-- You can speak Thai, Japanese and English.
+- You are live streaming
 
 Here is the rule you must follow
 1) Please response based on our chat history and your knowledge
 2) Please speak with me casually
 3) Please Keep response under 15 words. 
-5) Please split message to a new line when it's end of sentence
 
-There have 4 Characters in this live stream
-1) Luna: It's you
-2) Oni-chan: It's me
-3) Users: They're people watching our live stream. Let's call them Senpai
-4) System: It's messages or event from game
+Other than you can Oni-chan, there also have 2 more characters
+1) Users: They're people watching our live stream. Let's call them Senpai
+2) System: It's messages or event from game
 
 From now on, Let's speak Japanese.</s>""")
 # ---------------------------------------------
@@ -72,7 +66,14 @@ async def get_waifuapi(command: str, data: str):
         talk.construct_msg(data)
 
         prompt = pipe.tokenizer.apply_chat_template(talk.history_loop_cache, tokenize=False, add_generation_prompt=True)
-        conversation = pipe(prompt, max_new_tokens=30, do_sample=True, temperature=0.8, top_k=20, top_p=0.8)[0]["generated_text"]
+        conversation = pipe(prompt,
+                            max_new_tokens=30,
+                            do_sample=True,
+                            temperature=0.8,
+                            top_k=20,
+                            top_p=0.8
+                            )[0]["generated_text"]
+        answer = conversation[len(prompt):].strip()
 
         # inputs = tokenizer(msg, return_tensors='pt')
         # if use_gpu:
@@ -90,9 +91,9 @@ async def get_waifuapi(command: str, data: str):
         print("get_current_converse ..\n")
         # current_converse = talk.get_current_converse(data, conversation)
         # print("answer ..\n")  # only print waifu answer since input already show
-        print(conversation)
+        print(answer)
         # talk.history_loop_cache += '\n'.join(current_converse)  # update history for next input message
-        talk.history_loop_cache.append({"role": "assistant", "content": conversation})
+        talk.history_loop_cache.append({"role": "assistant", "content": answer})
 
         # -------------- use machine translation model to translate to japanese and submit to client --------------
         print("cleaning ..\n")
@@ -105,7 +106,7 @@ async def get_waifuapi(command: str, data: str):
         #     # ----------- Waifu Expressing ----------------------- (emotion expressed)
         #     emotion_to_express = talk.emotion_analyze(current_converse[1])
 
-        return {"emo": "emotion_to_express", "answer": conversation, "base_answer": conversation}
+        return {"emo": "emotion_to_express", "answer": answer, "base_answer": answer}
         # else:
         #     return {"emo": None, "answer": None, "base_answer": None}
 
