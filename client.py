@@ -5,9 +5,10 @@ import time
 
 def resp(msg):
     start_time = time.time()
+    msg = "Oni-chan: " + msg
     extra_request = parse.quote(msg)
     print(extra_request)
-    url = f'https://426e39a119e21.notebooksb.jarvislabs.net/waifuapi?command=chat&data=' + extra_request
+    url = f'http://localhost:6006/waifuapi?command=chat&data=' + extra_request
 
     try:
         r = requests.get(url)

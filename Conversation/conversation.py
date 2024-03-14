@@ -14,58 +14,44 @@ emotion_mapping = {
 class character_msg_constructor:
     def __init__(self, name, char_persona):
         self.name = name
-        self.persona = char_persona
-        self.conversation_history = ''
+        self.persona = char_persona.replace("\n", " ")
         self.emotion_analyzer = create_analyzer(task="emotion", lang="en")
-        self.split_counter = 0
-        self.history_loop_cache = ''
+        # self.split_counter = 0
+        self.history_loop_cache = []
 
-    def construct_msg(self, text: str, conversation_history=None) -> str:
-        if conversation_history != None:
-            self.conversation_history = f'{self.conversation_history}\n{conversation_history}'  # add conversation history
-
-            if len(self.conversation_history.split('\n')) > 40:  # limit conversation history to prevent memory leak
-                self.conversation_history = self.conversation_history.split('\n')[-6:]  # replace with last 4 lines
-                self.split_counter = 2
-            conversation_template = self.conversation_history.strip()
+    def construct_msg(self, text: str) -> list:
+        if self.history_loop_cache:
+            if len(self.history_loop_cache) > 25:  # limit conversation history to prevent memory leak
+                self.history_loop_cache = self.history_loop_cache[-6:]  # replace with last 4 lines
         else:
-            conversation_template = f"""{self.name}'s Persona: {self.persona}
-
-{self.conversation_history.strip()}
-"""
-
-        return '\n'.join([x.strip() for x in conversation_template.split('\n')])
+            # conversation_template = f"""{self.name}'s Persona: {self.persona}\n"""
+            # conversation_template = f"""<|user|>\n{self.persona}</s>\n<|assistant|>\nได้ค่ะ โอนี่จัง\n"""
+            self.history_loop_cache = [
+                # {"role": "system", "content": template},
+                {"role": "system", "content": f"""{self.persona}"""},
+            ]
+        self.history_loop_cache.append({"role": "user", "content": text})
 
     # conversation formatter
-    def get_current_converse(self, conversation_text: str) -> list:
-        splited = [x.strip() for x in conversation_text.split('\n') if x != '']
-        conversation_list = []
-        conversation_line_count = 0
-        for idx, thisline in enumerate(splited):
-            holder = conversation_line_count
-            if thisline.startswith(f'{self.name}:') or thisline.startswith('You:'):  # if found talking line
-                holder += 1
-
-            if holder > conversation_line_count:  # append talking line at each found
-                conversation_list.append(thisline)
-                conversation_line_count = holder
-
-            elif conversation_line_count > 0:  # concat conversation into the line before if no new converse line found
-                conversation_list[-1] = f'{conversation_list[-1].strip()} {thisline.strip()}'
-
-        return conversation_list
-
-    def emotion_analyze(self, text: str) -> list:
-        emotions_text = text
-        if '*' in text:
-            emotions_text = re.findall(r'\*(.*?)\*', emotions_text)  # get emotion *action* as input if exist
-            emotions_text = ' '.join(emotions_text)  # create input
-
-        emotions = self.emotion_analyzer.predict(emotions_text).probas
-        ordered = dict(sorted(emotions.items(), key=lambda x: x[1]))
-        ordered = [k for k, v in ordered.items()]  # top two emotion
-        ordered.reverse()
-        return ordered[:2]
+    def get_current_converse(self, data: str, conversation_text: str) -> list:
+        conversation_text = conversation_text.replace("<|assistant|>", "Luna: ")
+        return [data , conversation_text]
+        # splited = [x.strip() for x in conversation_text.split('\n') if x != '']
+        # conversation_list = []
+        # conversation_line_count = 0
+        # for idx, thisline in enumerate(splited):
+        #     holder = conversation_line_count
+        #     if thisline.startswith(f'{self.name}:') or thisline.startswith('You:'):  # if found talking line
+        #         holder += 1
+        #
+        #     if holder > conversation_line_count:  # append talking line at each found
+        #         conversation_list.append(thisline)
+        #         conversation_line_count = holder
+        #
+        #     elif conversation_line_count > 0:  # concat conversation into the line before if no new converse line found
+        #         conversation_list[-1] = f'{conversation_list[-1].strip()} {thisline.strip()}'
+        #
+        # return conversation_list
 
     def emotion_analyze(self, text: str) -> tuple[str | Any, str]:
         emotion_to_express = 'netural'
