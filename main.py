@@ -60,20 +60,22 @@ async def root():
 # do a http server instead
 @app.get("/waifuapi")
 async def get_waifuapi(command: str, data: str):
-    print(command)
+    print(data)
     if command == "chat":
         # ----------- Create Response --------------------------
         talk.construct_msg(data)
+        print("input")
+        print(talk.history_loop_cache)
 
         prompt = pipe.tokenizer.apply_chat_template(talk.history_loop_cache, tokenize=False, add_generation_prompt=True)
-        conversation = pipe(prompt,
-                            max_new_tokens=30,
+        answer = pipe(prompt,
+                            max_new_tokens=50,
                             do_sample=True,
                             temperature=0.8,
-                            top_k=20,
+                            top_k=40,
                             top_p=0.8
                             )[0]["generated_text"]
-        answer = conversation[len(prompt):].strip()
+        answer = answer[len(prompt):].replace("ASSISTANT:", "").strip()
 
         # inputs = tokenizer(msg, return_tensors='pt')
         # if use_gpu:
@@ -106,7 +108,7 @@ async def get_waifuapi(command: str, data: str):
         #     # ----------- Waifu Expressing ----------------------- (emotion expressed)
         #     emotion_to_express = talk.emotion_analyze(current_converse[1])
 
-        return {"emo": "emotion_to_express", "answer": answer, "base_answer": answer}
+        return {"emo": "netural", "answer": answer, "base_answer": answer}
         # else:
         #     return {"emo": None, "answer": None, "base_answer": None}
 
