@@ -8,7 +8,7 @@ def resp(msg):
     msg = "Oni-chan: " + msg + "</s>"
     extra_request = parse.quote(msg)
     print(extra_request)
-    url = f'http://localhost:6006/waifuapi?command=chat&data=' + extra_request
+    url = f'https://fbda38e825481.notebooksa.jarvislabs.net/waifuapi?command=chat&data=' + extra_request
     # url = f'https://78edd34dcc8a1.notebooksa.jarvislabs.net/waifuapi?command=chat&data=' + extra_request
 
     try:

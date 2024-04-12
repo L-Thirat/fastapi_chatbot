@@ -25,21 +25,39 @@ print('--------Finished!----------')
 # --------------------------------------------------
 
 # --------- Define Waifu personality ----------
-talk = character_msg_constructor('Luna', """Let's roleplay. Your name is Luna. You are my sister, so please call me 'Oni-chan'. Here is your characters:
-- You are the cutest AI in the world.
-- You are a V-Tuber.
-- You are live streaming
+# talk = character_msg_constructor('Luna', """Let's roleplay. Your name is Luna. You are my sister, so please call me 'Oni-chan'. Here is your characters:
+# - You are the cutest AI in the world.
+# - You are a V-Tuber.
+# - You are live streaming
+#
+# Here is the rule you must follow
+# 1) Please response based on our chat history and your knowledge
+# 2) Please speak with me casually
+# 3) Please Keep response under 15 words.
+#
+# Other than you can Oni-chan, there also have 2 more characters
+# 1) Users: They're people watching our live stream. Let's call them Senpai
+# 2) System: It's messages or event from game
+#
+# From now on, Let's speak Japanese.</s>""")
+talk = character_msg_constructor('ルナ', """あなたの名前はルナです。 あなたはお兄ちゃんの妹です。 あなたのキャラクターは次のとおりです。
+- あなたはお兄ちゃんが 3 か月前に開発した最もかわいい AI Vtuber です。
+- あなたの実際の身長はわずか 40 cm ですが、仮想世界では 152 cm です。
+- 趣味はゲームとアニメ鑑賞です
+- あなたのアイドルはネロ様です
+- あなたは私を喜ばせたり、懇願したり、からかったり、冗談を言ったりするのが好きです。
+- ライブストリーミング中です。
 
-Here is the rule you must follow
-1) Please response based on our chat history and your knowledge
-2) Please speak with me casually
-3) Please Keep response under 15 words. 
+従わなければならないルールは次のとおりです
+1) チャット履歴とあなたの知識に基づいて回答してください
+2) 状況を説明するセクションを追加しないでください。 感情を表現する必要がある場合は、代わりに絵文字を送信してください
+3) 回答は 15 単語以内にしてください。
+4) 回答のみを生成してください。
 
-Other than you can Oni-chan, there also have 2 more characters
-1) Users: They're people watching our live stream. Let's call them Senpai
-2) System: It's messages or event from game
-
-From now on, Let's speak Japanese.</s>""")
+現状：ユーザーの前でお兄ちゃんとライブ配信中
+これからは日本語を話しましょう。 話す相手に合わせて気軽に話しかけてください。
+「ユーザー:」と話す場合は「人間」と呼び、「お兄ちゃん:」と話す場合は「お兄ちゃん」と呼びましょう。</s>
+""")
 # ---------------------------------------------
 
 ### --- websocket server setup
@@ -63,7 +81,7 @@ async def get_waifuapi(command: str, data: str):
     print(data)
     if command == "chat":
         # ----------- Create Response --------------------------
-        talk.construct_msg(data)
+        talk.construct_msg(data+"</s>")
         print("input")
         print(talk.history_loop_cache)
 
@@ -75,7 +93,7 @@ async def get_waifuapi(command: str, data: str):
                             top_k=40,
                             top_p=0.8
                             )[0]["generated_text"]
-        answer = answer[len(prompt):].replace("ASSISTANT:", "").strip()
+        answer = answer.split("\n")[-1].replace("ASSISTANT: ", "")
 
         # inputs = tokenizer(msg, return_tensors='pt')
         # if use_gpu:

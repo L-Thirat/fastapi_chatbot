@@ -22,13 +22,14 @@ class character_msg_constructor:
     def construct_msg(self, text: str):
         if self.history_loop_cache:
             if len(self.history_loop_cache) > 6:  # limit conversation history to prevent memory leak
-                del self.history_loop_cache[:2]
+                self.history_loop_cache = self.history_loop_cache[:2]
         else:
             # conversation_template = f"""{self.name}'s Persona: {self.persona}\n"""
             # conversation_template = f"""<|user|>\n{self.persona}</s>\n<|assistant|>\nได้ค่ะ โอนี่จัง\n"""
             self.history_loop_cache = [
                 # {"role": "system", "content": template},
-                {"role": "system", "content": f"""{self.persona}"""},
+                {"role": "user", "content": f"""{self.persona}"""},
+                {"role": "assistant"}#, "content": f"""オッケー、お兄ちゃん</s>"""}
             ]
         self.history_loop_cache.append({"role": "user", "content": text})
 
